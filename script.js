@@ -21,7 +21,7 @@ recommendForm.addEventListener("submit", async (e) => {
 
   const skills = skillsInput
     .split(",")
-    .map(skill => skill.trim())
+    .map(skill => skill.trim().toLowerCase())
     .filter(skill => skill !== "");
 
   if (skills.length === 0) {
@@ -29,11 +29,6 @@ recommendForm.addEventListener("submit", async (e) => {
     loading.classList.add("hidden");
     return;
   }
-
-  if (experienceLevel === "senior" && yearsOfExperience < 5) {
-  showError("Senior level requires at least 5 years of experience");
-  return;
-}
 
   try {
     const response = await fetch(API_URL, {
@@ -86,42 +81,66 @@ function displayResults(recommendations) {
     const matchPercentage = Math.round((job.final_score || 0) * 100);
 
     card.innerHTML = `
-      <h3>${index + 1}. ${job.title}</h3>
+      <div class="result-top">
+        <div class="job-title-box">
+          <h3>${index + 1}. ${job.title}</h3>
+          <p class="job-id">Job ID: ${job.job_id}</p>
+        </div>
 
-      <div class="result-meta">
-        <span class="badge">Job ID: ${job.job_id}</span>
-        <span class="badge">Level: ${job.experience_level}</span>
-        <span class="badge">Required Years: ${job.years_of_experience}</span>
-        <span class="badge">Match: ${matchPercentage}%</span>
-      </div>
-
-      <div class="score-box">
-        <p><strong>Final Score:</strong> ${job.final_score}</p>
-        <p><strong>Cosine Score:</strong> ${job.cosine_score}</p>
-        <p><strong>Skill Overlap:</strong> ${job.skill_overlap_score}</p>
-        <p><strong>Experience Level Score:</strong> ${job.experience_match_score}</p>
-        <p><strong>Years Experience Score:</strong> ${job.years_experience_match_score}</p>
-      </div>
-
-      <div class="skills-section">
-        <h4>Matched Skills</h4>
-        <div class="skill-list">
-          ${
-            job.matched_skills && job.matched_skills.length > 0
-              ? job.matched_skills.map(skill => `<span class="skill-tag match-tag">${skill}</span>`).join("")
-              : `<span class="skill-tag">No matched skills</span>`
-          }
+        <div class="match-box">
+          <div class="match-label">Overall Match</div>
+          <div class="match-value">${matchPercentage}%</div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${matchPercentage}%"></div>
+          </div>
         </div>
       </div>
 
-      <div class="skills-section">
-        <h4>Missing Skills</h4>
-        <div class="skill-list">
-          ${
-            job.missing_skills && job.missing_skills.length > 0
-              ? job.missing_skills.slice(0, 8).map(skill => `<span class="skill-tag missing-tag">${skill}</span>`).join("")
-              : `<span class="skill-tag">No missing skills</span>`
-          }
+      <div class="meta-row">
+        <span class="meta-badge">Level: ${job.experience_level}</span>
+        <span class="meta-badge">Required Years: ${job.years_of_experience}</span>
+      </div>
+
+      <div class="score-grid">
+        <div class="score-item">
+          <h4>Final Score</h4>
+          <p>${job.final_score}</p>
+        </div>
+        <div class="score-item">
+          <h4>Cosine Score</h4>
+          <p>${job.cosine_score}</p>
+        </div>
+        <div class="score-item">
+          <h4>Skill Overlap</h4>
+          <p>${job.skill_overlap_score}</p>
+        </div>
+        <div class="score-item">
+          <h4>Years Match</h4>
+          <p>${job.years_experience_match_score}</p>
+        </div>
+      </div>
+
+      <div class="skills-wrapper">
+        <div class="skill-block">
+          <h4>Matched Skills</h4>
+          <div class="skill-list">
+            ${
+              job.matched_skills && job.matched_skills.length > 0
+                ? job.matched_skills.map(skill => `<span class="skill-tag match-tag">${skill}</span>`).join("")
+                : `<span class="skill-tag empty-tag">No matched skills</span>`
+            }
+          </div>
+        </div>
+
+        <div class="skill-block">
+          <h4>Missing Skills</h4>
+          <div class="skill-list">
+            ${
+              job.missing_skills && job.missing_skills.length > 0
+                ? job.missing_skills.slice(0, 10).map(skill => `<span class="skill-tag missing-tag">${skill}</span>`).join("")
+                : `<span class="skill-tag empty-tag">No missing skills</span>`
+            }
+          </div>
         </div>
       </div>
     `;
